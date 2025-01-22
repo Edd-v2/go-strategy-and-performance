@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
+	"go-strategy-and-performance/helper"
 	"go-strategy-and-performance/sender"
-	"go-strategy-and-performance/strategy"
+
 	"log"
 	"net/http"
 	"time"
@@ -41,21 +42,13 @@ func init_api(connManager *sender.ConnectionManager) {
 			c.JSON(400, gin.H{"error": "Dati non validi"})
 			return
 		}
+
 		// do smt here
-		var selected_strategy strategy.Strategy
-		switch req.Strategy {
-		case "sequential":
-			selected_strategy = &strategy.SequentialStrategy{}
-		case "goroutine_channel":
-			selected_strategy = &strategy.GoroutineChannelStrategy{}
-		case "goroutine_mutex":
-			selected_strategy = &strategy.GoroutineMutexStrategy{}
-		case "more-goroutine":
-		default:
-			c.JSON(400, gin.H{"error": "Invalid strategy"})
+		selected_strategy, err := helper.GetStrategy(req.Strategy)
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Dati non validi"})
 			return
 		}
-
 		// async exec
 		go func() {
 			startTime := time.Now()
